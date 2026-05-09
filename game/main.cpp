@@ -2,14 +2,14 @@
 #include <random>
 
 void playGame(std::mt19937 &gen) {
-    std::uniform_int_distribution<> dist(1, 100);
+    std::uniform_int_distribution<> dist(1, 1000);
 
     int secretNumber = dist(gen);
     int guess;
     int attempts = 0;
     bool isWinner = false;
 
-    std::cout << "\nGuess the number from 1 to 100! You have 5 attempts!\n";
+    std::cout << "\nGuess the number from 1 to 1000! You have 5 attempts!\n";
 
     do {
         attempts++;
