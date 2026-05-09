@@ -10,14 +10,14 @@ int main() {
     int secretNumber = dist(gen); // number from 1 to 100
     int guess;
     int attempts = 0;
+    bool isWinner = false;
 
-    std::cout << "Guess the number from 1 to 100!" << std::endl;
+    std::cout << "Guess the number from 1 to 100! You have 5 attempts!" << std::endl;
 
     do {
-        std::cout << "Enter your number: ";
-        std::cin >> guess;
-
         attempts++;
+        std::cout << "Attempt " << attempts << ". Enter your number: ";
+        std::cin >> guess;
 
         if (guess > secretNumber) {
             std::cout << "The secret number is smaller than your guess!" << std::endl;
@@ -27,12 +27,17 @@ int main() {
         }
         else {
             std::cout << "Congratulations! You guessed the number in "
-                 << attempts << " attempts!" << std::endl;
+                 << attempts << " attempts out of 5!" << std::endl;
+            isWinner = true;
         }
 
-    } while (guess != secretNumber);
+    } while (guess != secretNumber && attempts < 5);
 
-    std::cout << "\nPress Enter to exit...";
+    if (!isWinner) {
+        std::cout << "\nOh! You lose, the guessed number was " << secretNumber << "!\nTry Again." << std::endl;
+    }
+
+    std::cout << "\nPress Enter to restart game...";
     std::cin.ignore();
     std::cin.get();
 
