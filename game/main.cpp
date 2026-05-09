@@ -1,18 +1,15 @@
 #include <iostream>
 #include <random>
 
-int main() {
-    // Random number generator
-    std::random_device rd;
-    std::mt19937 gen(rd());
+void playGame(std::mt19937 &gen) {
     std::uniform_int_distribution<> dist(1, 100);
 
-    int secretNumber = dist(gen); // number from 1 to 100
+    int secretNumber = dist(gen);
     int guess;
     int attempts = 0;
     bool isWinner = false;
 
-    std::cout << "Guess the number from 1 to 100! You have 5 attempts!" << std::endl;
+    std::cout << "\nGuess the number from 1 to 100! You have 5 attempts!\n";
 
     do {
         attempts++;
@@ -20,26 +17,38 @@ int main() {
         std::cin >> guess;
 
         if (guess > secretNumber) {
-            std::cout << "The secret number is smaller than your guess!" << std::endl;
+            std::cout << "The secret number is smaller than your guess!\n";
         }
         else if (guess < secretNumber) {
-            std::cout << "The secret number is greater than your guess!" << std::endl;
+            std::cout << "The secret number is greater than your guess!\n";
         }
         else {
             std::cout << "Congratulations! You guessed the number in "
-                 << attempts << " attempts out of 5!" << std::endl;
+                      << attempts << " attempts out of 5!\n";
             isWinner = true;
         }
 
     } while (guess != secretNumber && attempts < 5);
 
     if (!isWinner) {
-        std::cout << "\nOh! You lose, the guessed number was " << secretNumber << "!\nTry Again." << std::endl;
+        std::cout << "\nOh! You lose, the correct number was " << secretNumber << "!\n";
     }
+}
 
-    std::cout << "\nPress Enter to restart game...";
-    std::cin.ignore();
-    std::cin.get();
+int main() {
+    std::random_device rd;
+    std::mt19937 gen(rd());
 
+    char choice;
+
+    do {
+        playGame(gen);
+
+        std::cout << "\nWould you like to restart the game? (y/n): ";
+        std::cin >> choice;
+
+    } while (choice == 'y' || choice == 'Y');
+
+    std::cout << "Good bye...\n";
     return 0;
 }
