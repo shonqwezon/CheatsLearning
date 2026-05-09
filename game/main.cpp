@@ -1,37 +1,53 @@
 #include <iostream>
 #include <random>
 
-void playGame(std::mt19937 &gen) {
-    std::uniform_int_distribution<> dist(1, 1000);
+struct GameConfig {
+    int minNumber = 1;
+    int maxNumber = 1000;
+    int maxAttempts = 5;
+};
 
-    int secretNumber = dist(gen);
-    int guess;
+struct GameState {
+    int secretNumber = 0;
     int attempts = 0;
     bool isWinner = false;
+};
 
-    std::cout << "\nGuess the number from 1 to 1000! You have 5 attempts!\n";
+void playGame(std::mt19937 &gen, const GameConfig &config, GameState &state) {
+    std::uniform_int_distribution<> dist(config.minNumber, config.maxNumber);
 
-    do {
-        attempts++;
-        std::cout << "Attempt " << attempts << ". Enter your number: ";
+    state.secretNumber = dist(gen);
+    state.attempts = 0;
+    state.isWinner = false;
+
+    int guess;
+
+    std::cout << "\nGuess the number from "
+              << config.minNumber << " to " << config.maxNumber
+              << "! You have " << config.maxAttempts << " attempts!\n";
+
+    while (state.attempts < config.maxAttempts && !state.isWinner) {
+        state.attempts++;
+
+        std::cout << "Attempt " << state.attempts << ". Enter your number: ";
         std::cin >> guess;
 
-        if (guess > secretNumber) {
+        if (guess > state.secretNumber) {
             std::cout << "The secret number is smaller than your guess!\n";
         }
-        else if (guess < secretNumber) {
+        else if (guess < state.secretNumber) {
             std::cout << "The secret number is greater than your guess!\n";
         }
         else {
             std::cout << "Congratulations! You guessed the number in "
-                      << attempts << " attempts out of 5!\n";
-            isWinner = true;
+                      << state.attempts << " attempts!\n";
+            state.isWinner = true;
         }
+    }
 
-    } while (guess != secretNumber && attempts < 5);
-
-    if (!isWinner) {
-        std::cout << "\nOh! You lose, the correct number was " << secretNumber << "!\n";
+    if (!state.isWinner) {
+        std::cout << "\nYou lose! The correct number was "
+                  << state.secretNumber << "!\n";
     }
 }
 
@@ -39,12 +55,15 @@ int main() {
     std::random_device rd;
     std::mt19937 gen(rd());
 
+    GameConfig config;
+    GameState state;
+
     char choice;
 
     do {
-        playGame(gen);
+        playGame(gen, config, state);
 
-        std::cout << "\nWould you like to restart the game? (y/n): ";
+        std::cout << "\nRestart game? (y/n): ";
         std::cin >> choice;
 
     } while (choice == 'y' || choice == 'Y');
