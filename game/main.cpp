@@ -1,6 +1,12 @@
 #include <iostream>
 #include <random>
 
+#ifdef NDEBUG
+    #ifdef _WIN32
+        #include <windows.h>
+    #endif
+#endif
+
 struct GameConfig {
     int minNumber = 1;
     int maxNumber = 1000;
@@ -12,6 +18,18 @@ struct GameState {
     int attempts = 0;
     bool isWinner = false;
 };
+
+bool isDebuggerDetected() {
+#ifdef NDEBUG
+    #ifdef _WIN32
+        return IsDebuggerPresent();
+    #else
+        return false;
+    #endif
+#else
+    return false;
+#endif
+}
 
 void playGame(std::mt19937 &gen, const GameConfig &config, GameState &state) {
     std::uniform_int_distribution<> dist(config.minNumber, config.maxNumber);
@@ -27,6 +45,12 @@ void playGame(std::mt19937 &gen, const GameConfig &config, GameState &state) {
               << "! You have " << config.maxAttempts << " attempts!\n";
 
     while (state.attempts < config.maxAttempts && !state.isWinner) {
+        if (isDebuggerDetected()) {
+            std::cerr << "[ERROR] Debugger detected!\n";
+            std::cin.ignore();
+            std::cin.get();
+            continue;
+        }
         state.attempts++;
 
         std::cout << "Attempt " << state.attempts << ". Enter your number: ";
