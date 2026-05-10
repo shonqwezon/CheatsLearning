@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random>
+#include <cstdint>
 
 #ifdef NDEBUG
     #ifdef _WIN32
@@ -7,15 +8,45 @@
     #endif
 #endif
 
+uint32_t simpleHash(int v)
+{
+    v ^= 0xA5A5A5A5;
+    v = (v << 13) ^ (v >> 17);
+    return static_cast<uint32_t>(v);
+}
+
 struct GameConfig {
     int minNumber = 1;
     int maxNumber = 1000;
     int maxAttempts = 5;
 };
 
+
+struct SecureInt
+{
+    int value = 0;
+    uint32_t hash = 0;
+
+    void set(int v)
+    {
+        value = v;
+        hash = simpleHash(v);
+    }
+
+    int get() const
+    {
+        return value;
+    }
+
+    bool check() const
+    {
+        return hash == simpleHash(value);
+    }
+};
+
 struct GameState {
     int secretNumber = 0;
-    int attempts = 0;
+    SecureInt attempts;
     bool isWinner = false;
 };
 
@@ -35,7 +66,7 @@ void playGame(std::mt19937 &gen, const GameConfig &config, GameState &state) {
     std::uniform_int_distribution<> dist(config.minNumber, config.maxNumber);
 
     state.secretNumber = dist(gen);
-    state.attempts = 0;
+    state.attempts.set(0);
     state.isWinner = false;
 
     int guess;
@@ -44,16 +75,23 @@ void playGame(std::mt19937 &gen, const GameConfig &config, GameState &state) {
               << config.minNumber << " to " << config.maxNumber
               << "! You have " << config.maxAttempts << " attempts!\n";
 
-    while (state.attempts < config.maxAttempts && !state.isWinner) {
+    while (state.attempts.get() < config.maxAttempts && !state.isWinner) {
         if (isDebuggerDetected()) {
             std::cerr << "[ERROR] Debugger detected!\n";
             std::cin.ignore();
             std::cin.get();
             continue;
         }
-        state.attempts++;
+        if (!state.attempts.check())
+        {
+            std::cerr << "[ANTI-CHEAT] External memory modification detected!\n";
+            std::cin.ignore();
+            std::cin.get();
+            continue;
+        }
+        state.attempts.set(state.attempts.get() + 1);
 
-        std::cout << "Attempt " << state.attempts << ". Enter your number: ";
+        std::cout << "Attempt " << state.attempts.get() << ". Enter your number: ";
         std::cin >> guess;
 
         if (guess > state.secretNumber) {
@@ -64,7 +102,7 @@ void playGame(std::mt19937 &gen, const GameConfig &config, GameState &state) {
         }
         else {
             std::cout << "Congratulations! You guessed the number in "
-                      << state.attempts << " attempts!\n";
+                      << state.attempts.get() << " attempts!\n";
             state.isWinner = true;
         }
     }
